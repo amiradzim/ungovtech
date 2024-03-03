@@ -46,3 +46,8 @@ export interface RegistrationResponseData extends ResponseData {
     username?: string;
     id?: number;
 }
+
+export interface UserItem {
+    username?: string;
+    id?: number;
+}

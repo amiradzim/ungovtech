@@ -1,5 +1,5 @@
 import { openDb } from '@/db/database';
-import {InventoryItem, Result, InventoryPaginatedResult, BoolResponseData} from './types';
+import { InventoryItem, Result, InventoryPaginatedResult, BoolResponseData } from './types';
 
 export const InventoryModel = {
     // create new product
