@@ -1,9 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { inventoryService } from '@/services/inventoryService'; // Adjust the import path as necessary
+import { inventoryService } from '@/services/inventoryService';
+import { verifyPermissions } from "@/utils/checkPermissions"; // Adjust the import path as necessary
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "GET") {
-        const {id} = req.query;
+        const { id} = req.query;
+
+        const hasPermissions = verifyPermissions(req, ["read"]);
+        if (!hasPermissions) {
+            res.status(403).json({ message: "Access denied." });
+            return;
+        }
 
         if (!id) {
             res.status(400).json({message: "Invalid item ID"});
