@@ -7,7 +7,6 @@ export const AuthModel = {
         const sqlUpdate = "UPDATE TokenStore SET isValid = FALSE WHERE userId = ?";
 
         const currToken = await db.get(sqlGet, [userId]);
-        console.log("current token:",currToken)
         if (currToken) {
             await db.run(sqlUpdate, [userId]);
         }
