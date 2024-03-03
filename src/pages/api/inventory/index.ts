@@ -1,9 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { inventoryService } from '@/services/inventoryService'; // Ensure the correct import paths
+import { inventoryService } from '@/services/inventoryService';
+import { verifyPermissions } from "@/utils/checkPermissions"; // Ensure the correct import paths
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "GET") {
         const { page = 1, pageSize = 10, priceCondition, priceValue, sortOrder, supplierId } = req.query;
+
+        const hasPermissions = verifyPermissions(req, ["read"]);
+        if (!hasPermissions) {
+            res.status(403).json({ message: "Access denied." });
+            return;
+        }
 
         try {
             const result = await inventoryService.fetchPaginatedProducts(
