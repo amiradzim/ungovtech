@@ -3,7 +3,7 @@ import { userService } from "@/services/userServices";
 import { generateJwt } from "@/utils/authToken";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === "GET") {
+    if (req.method === "POST") {
         const { username, password } = req.body;
 
         const result = await userService.loginUser( username, password );
@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.status(500).json({ message: result.message ?? "An unexpected error occurred" });
         }
     } else {
-        res.setHeader("Allow", ["GET"]);
+        res.setHeader("Allow", ["POST"]);
         res.status(405).end("Method Not Allowed");
     }
 }
