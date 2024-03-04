@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const newJwt = await generateJwt(user.id);
 
             if (newJwt) {
-                res.status(200).json({ message: "Login successful", token: newJwt });
+                res.status(200).json({ message: "Login successful", token: newJwt, userId: user.id });
             } else {
                 res.status(500).json({ message: "Failed to generate JWT." });
             }

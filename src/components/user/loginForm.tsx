@@ -8,7 +8,7 @@ interface LoginFormProps {
     setIsRegistering: (value: boolean) => void;
     handleLogin: (e: React.FormEvent<HTMLFormElement>) => void;
 }
-export default function LoginForm({ username, setUsername, password, setPassword, setIsRegistering, handleLogin }: LoginFormProps) {
+export default function LoginForm({ username, setUsername, password, setPassword, setIsRegistering, handleLogin } : LoginFormProps) {
 
     return (
         <form onSubmit={handleLogin}>

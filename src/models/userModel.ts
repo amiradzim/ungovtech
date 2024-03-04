@@ -1,5 +1,6 @@
 import { openDb } from '@/db/database';
 import bcrypt from 'bcrypt';
+
 import {BoolResponseData, RegistrationResponseData, UserItem} from "@/models/types";
 
 export const UserModel = {

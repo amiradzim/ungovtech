@@ -1,15 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+
 import Navbar from '../components/common/Navbar';
 import LoginForm from "../components/user/loginForm";
 import RegistrationForm from "../components/user/registrationForm";
+import PermissionsForm from "@/components/user/permissionsForm";
+
+interface PermissionsState {
+    read: boolean;
+    create: boolean;
+    update: boolean;
+    delete: boolean;
+}
 
 export default function User() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
+    const [permissions, setPermissions] = useState(() => {
+        const savedPermissions = localStorage.getItem("permissions");
+        return savedPermissions ? JSON.parse(savedPermissions) : {
+            read: false,
+            create: false,
+            update: false,
+            delete: false,
+        }
+    });
+
+    useEffect(() => {
+        const loggedIn = localStorage.getItem("isLoggedIn") === 'true';
+        setIsLoggedIn(loggedIn);
+    }, []);
 
     const handleRegister = async (e: React.FormEvent) => {
+
         e.preventDefault();
 
         const response = await fetch('/api/user/register', {
@@ -42,14 +66,53 @@ export default function User() {
             setIsLoggedIn(true);
             const data = await response.json();
             localStorage.setItem("token", data.token);
+            localStorage.setItem("userId", data.userId);
+            localStorage.setItem("isLoggedIn", String(true));
         } else {
             alert("Login failed. Please check your credentials.");
         }
     };
 
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+        setPermissions((prev: PermissionsState) => ({
+            ...prev,
+            [name]: checked
+        }));
+    };
+
+    const handlePermissionChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const userId = Number(localStorage.getItem('userId'));
+        const selectedPermissions = Object.entries(permissions).filter(([key, value]) => value).map(([key]) => key);
+
+        console.log(userId, selectedPermissions);
+
+        const response = await fetch('/api/user/updatePermissions', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({ userId, newPermissions: selectedPermissions }),
+        });
+
+        if (response.ok) {
+            alert("Permissions updated successfully");
+            const data = await response.json();
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("permissions", JSON.stringify(permissions));
+        } else {
+            alert("Failed to update permissions");
+        }
+    };
+
     const handleLogout = () => {
         setIsLoggedIn(false);
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("permissions");
     };
 
     return (
@@ -57,10 +120,12 @@ export default function User() {
             <Navbar />
             <h1>User</h1>
             {isLoggedIn ? (
-                <div>
-                    <p>You are logged in!</p>
-                    <button onClick={handleLogout}>Log Out</button>
-                </div>
+                <PermissionsForm
+                    handlePermissionChange={handlePermissionChange}
+                    permissions={permissions}
+                    handleCheckboxChange={handleCheckboxChange}
+                    handleLogout={handleLogout}
+                />
             ) : isRegistering ? (
                 <RegistrationForm
                     username={username}
