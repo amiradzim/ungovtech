@@ -36,6 +36,14 @@ export interface SupplierItem {
     contactInfo: string;
 }
 
+export interface SuppliersResponseData extends ResponseData {
+    data?: SupplierItem[];
+}
+
+export interface AllSupplierItems<T> {
+    data: T[];
+}
+
 export interface SupplierResponseData extends ResponseData {
     data?: SupplierItem;
     itemId?: number;

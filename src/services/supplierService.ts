@@ -1,8 +1,10 @@
-import {InventoryItem, Result, SupplierItem} from '@/models/types';
+import {Result, SupplierItem} from '@/models/types';
 import { SupplierModel } from "@/models/supplierModel";
-import {InventoryModel} from "@/models/inventoryModel";
 
 export const supplierService = {
+    async getSuppliers() {
+        return SupplierModel.getAll();
+    },
     async addSupplier(supplierData: Omit<SupplierItem, 'id'>): Promise<Result<SupplierItem>> {
         return SupplierModel.create(supplierData);
     },

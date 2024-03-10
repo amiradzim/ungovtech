@@ -1,7 +1,21 @@
 import { openDb } from '@/db/database';
-import {SupplierItem, Result, InventoryItem, BoolResponseData} from "@/models/types";
+import {SupplierItem, Result, BoolResponseData, AllSupplierItems} from "@/models/types";
 
 export const SupplierModel = {
+    // get all suppliers
+    async getAll(): Promise<AllSupplierItems<SupplierItem>> {
+        const db = await openDb();
+
+        try {
+            const sql = "SELECT * FROM Supplier";
+            const rows = await db.all(sql)
+
+            return { data: rows };
+        } catch (error) {
+            throw new Error(`Failed to fetch suppliers: ${String(error)}`);
+        }
+    },
+
     // create new supplier
     async create(supplier: SupplierItem): Promise<Result<SupplierItem>> {
         const db = await openDb();

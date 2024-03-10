@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/common/Navbar";
 import InventoryTable from "@/components/inventory/inventoryTable";
 import InventoryFilter from "@/components/inventory/inventoryFilter";
+import InventoryAdd from "@/components/inventory/inventoryAdd";
 
 export default function Inventory() {
     interface InventoryItem {
@@ -13,10 +14,18 @@ export default function Inventory() {
         supplierContact: string;
     }
 
+    interface Permissions {
+        read: boolean;
+        create: boolean;
+        update: boolean;
+        delete: boolean;
+    }
+
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [readPermission, setReadPermission] = useState(false);
+    const [permissions, setPermissions] = useState<Permissions>({ read: false, create: false, update: false, delete: false });
+    const [addProduct, setAddProduct] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [totalPages, setTotalPages] = useState(0);
     const [priceCondition, setPriceCondition] = useState("");
@@ -28,6 +37,24 @@ export default function Inventory() {
     useEffect(() => {
         fetchInventory();
     }, [page]);
+
+    useEffect(() => {
+        fetchPermissions();
+    }, []);
+
+    const fetchPermissions = () => {
+        const storedPermissions = localStorage.getItem("permissions");
+
+        if (storedPermissions) {
+            try {
+                const parsedPermissions = JSON.parse(storedPermissions);
+                setPermissions(parsedPermissions);
+            } catch (error) {
+                console.error("Failed to parse permissions from local storage:", error);
+            }
+        }
+    };
+
 
     const fetchInventory = async () => {
         setLoading(true);
@@ -59,7 +86,6 @@ export default function Inventory() {
                 setTotalPages(pages);
                 setInventory(data.data);
                 setLoading(false);
-                setReadPermission(true);
             } else if (res.status === 403) {
                 setErrorMessage("Access denied. You do not have permission to access this resource.");
                 console.error(errorMessage);
@@ -90,38 +116,50 @@ export default function Inventory() {
         }
     };
 
+    const handleCreateProductClick = () => {
+        setAddProduct(!addProduct);
+    };
+
     return (
         <div>
             <Navbar />
             <div>
-                {(readPermission) ?
-                    <>
-                        <InventoryFilter
-                            priceCondition={priceCondition}
-                            setPriceCondition={setPriceCondition}
-                            handleRadioDeselect={handleRadioDeselect}
-                            priceValue={priceValue}
-                            setPriceValue={setPriceValue}
-                            sortOrder={sortOrder}
-                            setSortOrder={setSortOrder}
-                            supplierId={supplierId}
-                            setSupplierId={setSupplierId}
-                            fetchInventory={fetchInventory}
-                        />
-                        <InventoryTable
-                            inventory={inventory}
-                            page={page}
-                            setPage={setPage}
-                            totalPages={totalPages}
-                        />
-                    </>
-                    :
-                    <>
+                {!addProduct ? (
+                    permissions.read ? (
+                        <>
+                            <InventoryFilter
+                                priceCondition={priceCondition}
+                                setPriceCondition={setPriceCondition}
+                                handleRadioDeselect={handleRadioDeselect}
+                                priceValue={priceValue}
+                                setPriceValue={setPriceValue}
+                                sortOrder={sortOrder}
+                                setSortOrder={setSortOrder}
+                                supplierId={supplierId}
+                                setSupplierId={setSupplierId}
+                                fetchInventory={fetchInventory}
+                            />
+                            <InventoryTable
+                                inventory={inventory}
+                                page={page}
+                                setPage={setPage}
+                                totalPages={totalPages}
+                            />
+                            <button onClick={handleCreateProductClick} disabled={!permissions.create}>
+                                Create Product
+                            </button>
+                        </>
+                    ) : (
                         <h1>{errorMessage}</h1>
-                    </>
-                }
+                    )
+                ) : (
+                    <InventoryAdd
+                        handleCreateProductClick={handleCreateProductClick}
+                        errorMessage={errorMessage}
+                        setErrorMessage={setErrorMessage}
+                    />
+                )}
             </div>
         </div>
-
     );
 }

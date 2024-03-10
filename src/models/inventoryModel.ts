@@ -81,7 +81,10 @@ export const InventoryModel = {
     // get product by id
     async get(id: number): Promise<Result<InventoryItem>> {
         const db = await openDb();
-        const sql = "SELECT * FROM Inventory WHERE id = ?";
+        const sql = `SELECT Inventory.*, Supplier.name AS supplierName, Supplier.contactInfo AS supplierContact
+        FROM Inventory
+        JOIN Supplier ON Inventory.supplierId = Supplier.id
+        WHERE Inventory.id = ?`;
 
         try {
             const product = await db.get(sql, [id])

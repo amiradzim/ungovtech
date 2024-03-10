@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from "next/link";
 interface InventoryItem {
     id: number;
     name: string;
@@ -31,7 +32,11 @@ export default function InventoryTable({ inventory, page, setPage, totalPages }:
                 {inventory.map((item) => (
                     <tr key={item.id}>
                         <td>{item.id}</td>
-                        <td>{item.name}</td>
+                        <td>
+                            <Link href={`/inventory/${item.id}`}>
+                                {item.name}
+                            </Link>
+                        </td>
                         <td>${item.price.toFixed(2)}</td>
                         <td>{item.supplierName}</td>
                         <td>{item.supplierContact}</td>

@@ -17,23 +17,24 @@ export default function User() {
     const [password, setPassword] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
-    const [permissions, setPermissions] = useState(() => {
-        const savedPermissions = localStorage.getItem("permissions");
-        return savedPermissions ? JSON.parse(savedPermissions) : {
-            read: false,
-            create: false,
-            update: false,
-            delete: false,
-        }
+    const [permissions, setPermissions] = useState({
+        read: false,
+        create: false,
+        update: false,
+        delete: false,
     });
 
     useEffect(() => {
         const loggedIn = localStorage.getItem("isLoggedIn") === 'true';
         setIsLoggedIn(loggedIn);
+
+        const savedPermissions = localStorage.getItem("permissions");
+        if (savedPermissions) {
+            setPermissions(JSON.parse(savedPermissions));
+        }
     }, []);
 
     const handleRegister = async (e: React.FormEvent) => {
-
         e.preventDefault();
 
         const response = await fetch('/api/user/register', {
@@ -51,6 +52,7 @@ export default function User() {
             alert("Registration failed. Please try again.");
         }
     };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -85,8 +87,6 @@ export default function User() {
         e.preventDefault();
         const userId = Number(localStorage.getItem('userId'));
         const selectedPermissions = Object.entries(permissions).filter(([key, value]) => value).map(([key]) => key);
-
-        console.log(userId, selectedPermissions);
 
         const response = await fetch('/api/user/updatePermissions', {
             method: "POST",
