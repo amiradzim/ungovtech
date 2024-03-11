@@ -13,8 +13,12 @@ export default function Inventory() {
         name: string;
         description: string;
         price: number;
-        supplierName: string;
-        supplierContact: string;
+        supplier: Supplier;
+    }
+
+    interface Supplier {
+        name: string;
+        contactinfo: string;
     }
 
     interface Permissions {

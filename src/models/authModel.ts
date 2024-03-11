@@ -1,32 +1,46 @@
-import { openDb } from '@/db/database';
+import supabase from '@/db/supabase';
 
 export const AuthModel = {
+    // invalidate current user token
     async invalidateUserToken(userId: number): Promise<void> {
-        const db = await openDb();
-        const sqlGet = "SELECT * FROM TokenStore WHERE userId = ? AND isValid = 1";
-        const sqlUpdate = "UPDATE TokenStore SET isValid = FALSE WHERE userId = ?";
+        const { data, error } = await supabase
+            .from("tokenstore")
+            .update({ isvalid: false })
+            .match({ userid: userId, isvalid: true });
 
-        const currToken = await db.get(sqlGet, [userId]);
-        if (currToken) {
-            await db.run(sqlUpdate, [userId]);
+        if (error) {
+            console.error("Error invalidating user token:", error);
+            throw error;
         }
     },
 
+    // store new token
     async storeNewToken(tokenIdent: string, userId: number): Promise<void> {
-        const db = await openDb();
-        const sql = "INSERT INTO TokenStore (tokenIdent, userId, isValid) VALUES (?, ?, TRUE)";
-        await db.run(sql, [tokenIdent, userId]);
+        const { data, error } = await supabase
+            .from("tokenstore")
+            .insert([
+                { tokenident: tokenIdent, userid: userId, isvalid: true }
+            ]);
+
+        if (error) {
+            console.error("Error storing new token:", error);
+            throw error;
+        }
     },
 
+    // check if current jti in token matches the jti in database that is valid
     async isTokenValid(tokenIdent: string): Promise<boolean> {
-        const db = await openDb();
-        const sql = "SELECT isValid FROM TokenStore WHERE tokenIdent = ?";
-        const token = await db.get(sql, [tokenIdent]);
+        const { data, error } = await supabase
+            .from("tokenstore")
+            .select("isvalid")
+            .eq("tokenident", tokenIdent)
+            .single();
 
-        if (token) {
-            return token.isValid;
-        } else {
+        if (error) {
+            console.error("Error checking token validity:", error);
             return false;
         }
+
+        return data ? data.isvalid : false;
     },
 };

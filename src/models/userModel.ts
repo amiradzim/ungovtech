@@ -1,56 +1,75 @@
-import { openDb } from '@/db/database';
 import bcrypt from 'bcrypt';
+import supabase from '@/db/supabase';
 
 import {BoolResponseData, RegistrationResponseData, UserItem} from "@/models/types";
+
+interface UserRegister {
+    id: number;
+    username: string;
+}
 
 export const UserModel = {
     // register new user
     async register(username: string, password: string): Promise<RegistrationResponseData> {
-        const db = await openDb();
         try {
-            await db.run("BEGIN TRANSACTION");
-
             const hashedPassword = await bcrypt.hash(password, 10);
-            const sql = "INSERT INTO Users (username, password) VALUES (?, ?)";
-            const userResult = await db.run(sql, [username, hashedPassword]);
 
-            if (userResult.lastID) {
-                const roleSql = "SELECT roleId FROM UserRoles";
-                const roles = await db.all(roleSql);
+            const response = await supabase
+                .from("users")
+                .insert([{ username: username, password: hashedPassword }])
+                .select()
+                .single();
 
-                for (const role of roles) {
-                    const insertRoleSql = "INSERT INTO User_UserRoles (userId, roleId) VALUES (?, ?)";
-                    await db.run(insertRoleSql, [userResult.lastID, role.roleId]);
-                }
+            const user = response.data as UserRegister | null;
+            const userError = response.error;
 
-                await db.run("COMMIT");
-                return { success: true, message: "User registered successfully and roles assigned.", username: username, id: userResult.lastID };
-            } else {
-                await db.run("ROLLBACK");
-                return { success: false, message: "Failed to register user." };
+            if ( userError || !user ) {
+                throw new Error(userError?.message ?? "Failed to create user");
             }
+
+            const defaultRoleIds = [1, 2, 3, 4];
+
+            const roleAssignments = defaultRoleIds.map(roleid => ({
+                userid: user!.id,
+                roleid: roleid
+            }));
+
+            let { error: roleError } = await supabase
+                .from("user_userroles")
+                .insert(roleAssignments);
+
+            if (roleError) throw new Error(roleError.message);
+
+            return { success: true, message: "User registered successfully.", username, id: user.id };
         } catch (error) {
-            await db.run("ROLLBACK");
-            return { success: false, message: `Failed to register user: ${String(error)}` };
+            return { success: false, message: `Registration failed: ${String(error)}` };
         }
     },
 
     // user login
     async login(username: string, password: string): Promise<BoolResponseData> {
-        const db = await openDb();
         try {
-            const sql = "SELECT * FROM Users WHERE username = ?";
-            const user = await db.get(sql, [username]);
+            let { data, error } = await supabase
+                .from("users")
+                .select("*")
+                .eq("username", username)
+                .maybeSingle();
 
-            if (user) {
-                const passwordMatch = await bcrypt.compare(password, user.password);
-                if (passwordMatch) {
-                    return { success: true, message: "Login successful." };
-                } else {
-                    return { success: false, message: "Invalid username or password." };
-                }
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            if (!data) {
+                return { success: false, message: "Username not found." };
+            }
+
+            const user = data;
+            const passwordMatch = await bcrypt.compare(password, user.password);
+
+            if (passwordMatch) {
+                return { success: true, message: "Login successful." };
             } else {
-                return { success: false, message: "Username is not found." };
+                return { success: false, message: "Invalid username or password." };
             }
         } catch (error) {
             return { success: false, message: `Login error: ${String(error)}` };
@@ -58,46 +77,61 @@ export const UserModel = {
     },
 
     async findId(username: string): Promise<UserItem | null> {
-        const db = await openDb();
-        try {
-            const sql = "SELECT id FROM Users WHERE username = ?";
-            const user = await db.get(sql, [username]);
+        let { data, error } = await supabase
+            .from("users")
+            .select("id")
+            .eq("username", username)
+            .single();
 
-            if (user) {
-                return { id: user.id, username: username };
-            } else {
-                return null;
-            }
-        } catch (error) {
-            console.error(`Query error: ${String(error)}`);
-            throw new Error(`Query error: ${String(error)}`);
+        if (error) {
+            console.error(`Query error: ${String(error.message)}`);
+            throw new Error(`Query error: ${String(error.message)}`);
+        }
+
+        if (data) {
+            return { id: data.id, username: username };
+        } else {
+            return null;
         }
     },
 
     // update user permission
     async updatePermissions(userId: number, newPermissions: string[]): Promise<boolean> {
-        const db = await openDb();
         try {
-            await db.run("BEGIN TRANSACTION");
-            const deleteSql = "DELETE FROM User_UserRoles WHERE userId = ?";
+            // Delete existing roles
+            let { error: deleteError } = await supabase
+                .from("user_userroles")
+                .delete()
+                .eq("userid", userId);
 
-            await db.run(deleteSql, [userId]);
+            if (deleteError) {
+                throw deleteError;
+            }
 
+            // Insert new roles
             for (const permission of newPermissions) {
-                const roleSql = "SELECT roleId FROM UserRoles WHERE permissions = ?";
-                const role = await db.get(roleSql, [permission]);
+                let { data: roles, error: roleError } = await supabase
+                    .from("userroles")
+                    .select("roleid")
+                    .eq("permissions", permission);
 
-                if (role) {
-                    const insertRoleSql = "INSERT INTO User_UserRoles (userId, roleId) VALUES (?, ?)";
-                    await db.run(insertRoleSql, [userId, role.roleId]);
+                if (roleError) {
+                    throw roleError;
+                }
+
+                if (roles && roles.length > 0) {
+                    const role = roles[0];
+                    let { error: insertError } = await supabase
+                        .from("user_userroles")
+                        .insert([{ userid: userId, roleid: role.roleid }]);
+
+                    if (insertError) throw insertError;
                 } else {
                     throw new Error(`No role found for permission: ${permission}`);
                 }
             }
-            await db.run("COMMIT");
             return true;
         } catch (error) {
-            await db.run("ROLLBACK");
             console.error("Failed to update user permissions:", error);
             throw error;
         }
@@ -105,14 +139,34 @@ export const UserModel = {
 
     // get user permissions
     async getPermissions(userId: number): Promise<string[]> {
-        const db = await openDb();
-        const sql = `
-        SELECT permissions 
-        FROM UserRoles 
-        JOIN User_UserRoles ON UserRoles.roleId = User_UserRoles.roleId 
-        WHERE User_UserRoles.userId = ?`;
+        try
+        {
+            let { data: userRoles, error: userRolesError } = await supabase
+                .from("user_userroles")
+                .select("roleid")
+                .eq("userid", userId);
 
-        const permissions = await db.all(sql, [userId]);
-        return permissions.map(permission => permission.permissions);
+            if (userRolesError) {
+                throw userRolesError;
+            }
+
+            if (!userRoles || userRoles.length === 0) {
+                return [];
+            }
+
+            const roleIds = userRoles.map(role => role.roleid);
+
+            let { data: permissionsData, error: permissionsError } = await supabase
+                .from("userroles")
+                .select("permissions")
+                .in("roleid", roleIds);
+
+            if (permissionsError) throw permissionsError;
+            if (!permissionsData) return [];
+
+            return permissionsData.map(permission => permission.permissions);
+        } catch (error) {
+            throw error;
+        }
     }
 }

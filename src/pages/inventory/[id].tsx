@@ -8,7 +8,7 @@ interface InventoryItem {
     price: number;
     supplierName: string;
     supplierContact: string;
-    supplierId: number;
+    supplierid: number;
 }
 
 interface Supplier {
@@ -75,7 +75,7 @@ export default function InventoryDetails() {
             name: editedName,
             description: inventoryProduct.description,
             price: editedPrice,
-            supplierId: supplierId,
+            supplierid: supplierId,
         };
 
         const res = await fetch('/api/inventory/update-inventory', {
@@ -88,7 +88,8 @@ export default function InventoryDetails() {
         });
 
         if (res.ok) {
-            setInventoryProduct({...inventoryProduct, name: editedName, price: editedPrice, supplierId: supplierId});
+            // setInventoryProduct({...inventoryProduct, name: editedName, price: editedPrice, supplierid: supplierId});
+            fetchInventoryDetails();
             setIsEditMode(false);
         } else if (res.status === 403) {
             setErrorMessage("Access denied. You do not have permission to access this resource.");
@@ -129,7 +130,13 @@ export default function InventoryDetails() {
     };
 
     const handleBack = () => {
-        router.back();
+        const currentPage = localStorage.getItem("currentPage");
+
+        if (currentPage) {
+            router.push(`/inventory?page=${currentPage}`);
+        } else {
+            router.back();
+        }
     };
 
     useEffect(() => {

@@ -10,7 +10,7 @@ interface InventoryAddProps {
 interface Supplier {
     id: number;
     name: string;
-    contactInfo: string;
+    contactinfo: string;
 }
 
 export default function InventoryAdd ( { handleCreateProductClick, errorMessage, setErrorMessage }: InventoryAddProps) {
@@ -47,7 +47,7 @@ export default function InventoryAdd ( { handleCreateProductClick, errorMessage,
                     name,
                     description,
                     price: Number(price),
-                    supplierId: Number(supplierId),
+                    supplierid: Number(supplierId),
                 }),
             });
 

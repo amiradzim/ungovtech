@@ -5,7 +5,7 @@ import { verifyPermissions } from "@/utils/checkPermissions";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<InventoryResponseData>) {
     if (req.method === "POST") {
-        const { name, description, price, supplierId } = req.body;
+        const { name, description, price, supplierid } = req.body;
 
         const hasPermissions = verifyPermissions(req, ["create"]);
         if (!hasPermissions) {
@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             return;
         }
 
-        const result = await inventoryService.addInventoryItem({ name, description, price, supplierId });
+        const result = await inventoryService.addInventoryItem({ name, description, price, supplierid });
 
         if (result.data) {
             res.status(201).json({ message: "Item added successfully", data: result.data });

@@ -1,25 +1,32 @@
-import { openDb } from '@/db/database';
+import supabase from '@/db/supabase';
 import { InventoryItem, Result, InventoryPaginatedResult, BoolResponseData } from './types';
 
 export const InventoryModel = {
-    // create new product
-    async create(product: InventoryItem): Promise<Result<InventoryItem>> {
-        const db = await openDb();
-        const { name, description, price, supplierId } = product;
 
-        if (!name || price == null || supplierId == null) {
+    async create(product: InventoryItem): Promise<Result<InventoryItem>> {
+        const { name, description, price, supplierid } = product;
+
+        if (!name || price == null || supplierid == null) {
             throw new Error("Required fields cannot be empty.");
         }
 
         try {
-            const sql = await db.prepare(
-                "INSERT INTO Inventory (name, description, price, supplierId) VALUES (?, ?, ?, ?)"
-            );
-            const result = await sql.run(product.name, product.description, product.price, product.supplierId);
-            await sql.finalize();
+            const { data, error } = await supabase
+                .from("inventory")
+                .insert([
+                    { name, description, price, supplierid }
+                ])
+                .select()
+                .single();
 
-            if (result && result.lastID) {
-                return { data: { ...product, id: result.lastID } };
+            if (error) {
+                return { error: `Failed to insert inventory product: ${error.message}` };
+            }
+
+            const insertedProduct = data as InventoryItem;
+
+            if (insertedProduct) {
+                return { data: insertedProduct };
             } else {
                 return { error: "Failed to insert inventory product." };
             }
@@ -29,50 +36,40 @@ export const InventoryModel = {
     },
 
     // get products with pagination and filter
-    async getAll(page: number, pageSize: number, priceCondition?: 'More' | 'Less', priceValue?: number, sortOrder?: 'Asc' | 'Desc', supplierId?: number): Promise<InventoryPaginatedResult<InventoryItem>> {
-        const db = await openDb();
+    async getAll(page: number, pageSize: number, priceCondition?: "More" | "Less", priceValue?: number, sortOrder?: "Asc" | "Desc", supplierId?: number): Promise<InventoryPaginatedResult<InventoryItem>> {
         const offset = (page - 1) * pageSize;
 
-        let sql = `
-        SELECT Inventory.*, Supplier.name AS supplierName, Supplier.contactInfo AS supplierContact
-        FROM Inventory
-        JOIN Supplier ON Inventory.supplierId = Supplier.id
-        `;
-        let countSql = "SELECT COUNT(*) AS total FROM Inventory";
+        let query = supabase
+            .from("inventory")
+            .select("*, supplier (name, contactinfo)", { count: "exact" })
+            .range(offset, offset + pageSize - 1);
 
-        const params: (number | string)[] = [];
-        const countParams: number[] = [];
-        let whereClause = "";
-
-        if (priceCondition && priceValue !== undefined && !isNaN(priceValue)) {
-            whereClause += whereClause ? " AND" : " WHERE";
-            whereClause += priceCondition === "More" ? " price > ?" : " price < ?";
-            params.push(priceValue);
-            countParams.push(priceValue);
+        if (priceCondition && priceValue !== undefined) {
+            query = priceCondition === "More" ? query.gte("price", priceValue) : query.lte("price", priceValue);
         }
 
-        if (supplierId !== undefined && !isNaN(supplierId)) {
-            whereClause += whereClause ? " AND" : " WHERE";
-            whereClause += " supplierId = ?";
-            params.push(supplierId);
-            countParams.push(supplierId);
+        if (supplierId !== undefined) {
+            query = query.eq("supplierid", supplierId);
         }
-
-        sql += whereClause;
-        countSql += whereClause;
 
         if (sortOrder) {
-            sql += sortOrder === "Asc" ? " ORDER BY price ASC" : " ORDER BY price DESC";
+            query = sortOrder === "Asc" ? query.order("price", { ascending: true }) : query.order("price", { ascending: false });
+        } else {
+            query = query.order("id", { ascending: true });
         }
 
-        sql += " LIMIT ? OFFSET ?";
-        params.push(pageSize, offset);
-
         try {
-            const rows = await db.all(sql, params);
-            const totalResult = await db.get(countSql, countParams);
-            const total = totalResult.total;
-            return { data: rows, total };
+            const { data, error, count } = await query;
+
+            if (error) throw new Error(`Failed to fetch paginated products: ${error.message}`);
+
+            const transformedData = data?.map(item => ({
+                ...item,
+                supplierName: item.Supplier?.name,
+                supplierContact: item.Supplier?.contactinfo
+            })) ?? [];
+
+            return { data: transformedData, total: count ?? 0 };
         } catch (error) {
             throw new Error(`Failed to fetch paginated products: ${String(error)}`);
         }
@@ -80,18 +77,26 @@ export const InventoryModel = {
 
     // get product by id
     async get(id: number): Promise<Result<InventoryItem>> {
-        const db = await openDb();
-        const sql = `SELECT Inventory.*, Supplier.name AS supplierName, Supplier.contactInfo AS supplierContact
-        FROM Inventory
-        JOIN Supplier ON Inventory.supplierId = Supplier.id
-        WHERE Inventory.id = ?`;
-
         try {
-            const product = await db.get(sql, [id])
-            if (product) {
-                return { data: product};
+            let { data, error } = await supabase
+                .from("inventory")
+                .select("*, supplier (name, contactinfo)")
+                .eq("id", id)
+                .single();
+
+            if (error) {
+                return { error: `Failed to fetch the product: ${error.message}` };
+            }
+
+            if (data) {
+                const inventoryItem: InventoryItem = {
+                    ...data,
+                    supplierName: data.supplier.name,
+                    supplierContact: data.supplier.contactinfo
+                };
+                return { data: inventoryItem };
             } else {
-                return { error: "Product not found."};
+                return { error: "Product not found." };
             }
         } catch (error) {
             return { error: `Failed to fetch the product: ${String(error)}` };
@@ -100,16 +105,27 @@ export const InventoryModel = {
 
     // delete product
     async delete(id: number): Promise<BoolResponseData> {
-        const db = await openDb();
-        const sql = "DELETE FROM Inventory WHERE id = ?";
-
         try {
-            const result = await db.run(sql, [id]);
-            if (result.changes && result.changes > 0) {
-                return { success: true, message: "Product deleted successfully." };
-            } else {
+            const { data: item, error: fetchError } = await supabase
+                .from("inventory")
+                .select()
+                .eq("id", id)
+                .single();
+
+            if (fetchError || !item) {
                 return { success: false, message: "Product not found." };
             }
+
+            const { error: deleteError } = await supabase
+                .from("inventory")
+                .delete()
+                .match({ id });
+
+            if (deleteError) {
+                return { success: false, message: `Failed to delete the product: ${deleteError.message}` };
+            }
+
+            return { success: true, message: "Product deleted successfully." };
         } catch (error) {
             return { success: false, message: `Failed to delete the product: ${String(error)}` };
         }
@@ -117,21 +133,29 @@ export const InventoryModel = {
 
     // update product
     async update(product: InventoryItem): Promise<BoolResponseData> {
-        const db = await openDb();
-        const { id, name, description, price, supplierId } = product;
+        const { id, name, description, price, supplierid } = product;
+
+        if (!id) {
+            return { success: false, message: "Product ID is required." };
+        }
 
         try {
-            const sql = `
-            UPDATE Inventory
-            SET name = COALESCE(?, name),
-                description = COALESCE(?, description),
-                price = COALESCE(?, price),
-                supplierId = COALESCE(?, supplierId)
-            WHERE id = ?`;
+            const { data, error } = await supabase
+                .from("inventory")
+                .update({
+                    name: name,
+                    description: description,
+                    price: price,
+                    supplierid: supplierid
+                })
+                .eq("id", id)
+                .select();
 
-            const result = await db.run(sql, [name, description, price, supplierId, id]);
+            if (error) {
+                return { success: false, message: `Failed to update product: ${error.message}` };
+            }
 
-            if (result.changes && result.changes > 0) {
+            if (data && data.length > 0) {
                 return { success: true, message: "Product updated successfully." };
             } else {
                 return { success: false, message: "Product not found." };
@@ -143,57 +167,61 @@ export const InventoryModel = {
 
     // create 1000 random products
     async generate(): Promise<BoolResponseData> {
-        const db = await openDb();
+        const { data: suppliers, error: supplierError } = await supabase
+            .from("supplier")
+            .select("id");
+
+        if (supplierError) {
+            return { success: false, message: `Failed to fetch suppliers: ${supplierError.message}` };
+        }
+
+        const supplierIds = suppliers.map(supplier => supplier.id);
+
+        if (supplierIds.length === 0) {
+            return { success: false, message: "No suppliers found. Cannot generate products." };
+        }
+
+        let productsCreated = 0;
 
         try {
-            const suppliers = await db.all("SELECT id FROM Supplier");
-            const supplierIds = suppliers.map(supplier => supplier.id);
-
-            if (supplierIds.length === 0) {
-                return { success: false, message: "No suppliers found. Cannot generate products." };
-            }
-
-            let productsCreated = 0;
-            await db.run("BEGIN TRANSACTION");
-
             for (let i = 0; i < 1000; i++) {
                 const name = `Product ${i + 1}`;
                 const description = `Description for product ${i + 1}`;
                 const price = parseFloat((Math.random() * (1000 - 10) + 10).toFixed(2));
+                const supplierid = supplierIds[Math.floor(Math.random() * supplierIds.length)];
 
-                const supplierId = supplierIds[Math.floor(Math.random() * supplierIds.length)];
+                const { error } = await supabase
+                    .from("inventory")
+                    .insert([{ name, description, price, supplierid }]);
 
-                const result = await this.create({ name, description, price, supplierId });
-
-                if (result.data) {
-                    productsCreated++;
+                if (error) {
+                    throw new Error(`Failed to create product: ${error.message}`);
                 }
+
+                productsCreated++;
             }
 
-            await db.run("COMMIT");
             return { success: true, message: `${productsCreated} products created successfully.` };
-        } catch (error) {
-            await db.run("ROLLBACK");
-            return { success: false, message: `Failed to create products: ${String(error)}` };
+        } catch (error: any) {
+            return { success: false, message: `Failed to create products: ${error.message}` };
         }
     },
 
     // delete everything in inventory
     async deleteAll(): Promise<BoolResponseData> {
-        const db = await openDb();
-        const sql = "DELETE FROM Inventory";
-        const resetPkSql = "DELETE FROM sqlite_sequence WHERE name='Inventory'";
-
         try {
-            await db.run('BEGIN');
-            await db.run(sql);
-            await db.run(resetPkSql);
-            await db.run('COMMIT');
+            const { error } = await supabase
+                .from("inventory")
+                .delete()
+                .gte("id", 0);
+
+            if (error) {
+                return { success: false, message: `Failed to delete all products: ${error.message}` };
+            }
 
             return { success: true, message: "All products deleted successfully." };
-        } catch (error) {
-            await db.run("ROLLBACK");
-            return { success: false, message: `Failed to delete products or reset PK: ${String(error)}` };
+        } catch (error: any) {
+            return { success: false, message: `Failed to delete products: ${error.message}` };
         }
     }
 };

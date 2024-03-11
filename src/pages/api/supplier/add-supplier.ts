@@ -4,9 +4,9 @@ import { SupplierResponseData } from "@/models/types";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<SupplierResponseData>) {
     if (req.method === "POST") {
-        const { name, contactInfo } = req.body;
+        const { name, contactinfo } = req.body;
 
-        const result = await supplierService.addSupplier({ name, contactInfo });
+        const result = await supplierService.addSupplier({ name, contactinfo });
 
         if (result.data) {
             res.status(201).json({ message: "Item added successfully", data: result.data });

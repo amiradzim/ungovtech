@@ -4,7 +4,7 @@ import { verifyPermissions } from "@/utils/checkPermissions";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "PUT") {
-        const { id, name, description, price, supplierId } = req.body;
+        const { id, name, description, price, supplierid } = req.body;
 
         const hasPermissions = verifyPermissions(req, ["update"]);
         if (!hasPermissions) {
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return;
         }
 
-        const result = await inventoryService.updateProduct({ id, name, description, price, supplierId });
+        const result = await inventoryService.updateProduct({ id, name, description, price, supplierid });
 
         if (result.success) {
             res.status(200).json({ message: "Product updated successfully" });

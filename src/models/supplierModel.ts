@@ -1,133 +1,115 @@
-import { openDb } from '@/db/database';
+import supabase from '@/db/supabase';
 import {SupplierItem, Result, BoolResponseData, AllSupplierItems} from "@/models/types";
 
 export const SupplierModel = {
     // get all suppliers
     async getAll(): Promise<AllSupplierItems<SupplierItem>> {
-        const db = await openDb();
+        let { data: suppliers, error } = await supabase
+            .from("supplier")
+            .select("*");
 
-        try {
-            const sql = "SELECT * FROM Supplier";
-            const rows = await db.all(sql)
-
-            return { data: rows };
-        } catch (error) {
-            throw new Error(`Failed to fetch suppliers: ${String(error)}`);
+        if (error) {
+            throw new Error(`Failed to fetch suppliers: ${error.message}`);
         }
+
+        const supplierItems: SupplierItem[] = suppliers || [];
+
+        return { data: supplierItems };
     },
 
     // create new supplier
     async create(supplier: SupplierItem): Promise<Result<SupplierItem>> {
-        const db = await openDb();
-        const { name, contactInfo } = supplier;
+        const { name, contactinfo } = supplier;
 
-        if (!name || contactInfo == null) {
+        if (!name || !contactinfo) {
             throw new Error("Required fields cannot be empty.");
         }
 
-        try {
-            const sql = await db.prepare(
-                "INSERT INTO Supplier (name, contactInfo) VALUES (?, ?)"
-            );
-            const result = await sql.run(supplier.name, supplier.contactInfo);
-            await sql.finalize();
+        let { data, error } = await supabase
+            .from("supplier")
+            .insert([
+                { name, contactinfo }
+            ])
+            .select()
+            .single();
 
-            if (result && result.lastID) {
-                return { data: { ...supplier, id: result.lastID } };
-            } else {
-                return { error: "Failed to insert supplier." };
-            }
-        } catch (error) {
-            return { error: `Failed to insert supplier: ${String(error)}` };
+        if (error) {
+            return { error: `Failed to insert supplier: ${error.message}` };
+        }
+
+        if (data) {
+            const insertedSupplier = data as SupplierItem;
+            return { data: insertedSupplier };
+        } else {
+            return { error: "Failed to insert supplier." };
         }
     },
 
     // update supplier
     async update(supplier: SupplierItem): Promise<BoolResponseData> {
-        const db = await openDb();
-        const { id, name, contactInfo } = supplier;
+        const { id, name, contactinfo } = supplier;
 
-        try {
-            const sql = `
-            UPDATE Supplier
-            SET name = COALESCE(?, name),
-                contactInfo = COALESCE(?, contactInfo)
-            WHERE id = ?`;
+        let { data, error } = await supabase
+            .from("supplier")
+            .update({ name, contactinfo })
+            .eq("id", id);
 
-            const result = await db.run(sql, [name, contactInfo, id]);
-
-            if (result.changes && result.changes > 0) {
-                return { success: true, message: "Supplier updated successfully." };
-            } else {
-                return { success: false, message: "Supplier not found." };
-            }
-        } catch (error) {
-            return { success: false, message: `Failed to update supplier: ${String(error)}` };
+        if (error) {
+            return { success: false, message: `Failed to update supplier: ${error.message}` };
         }
+
+        return { success: true, message: "Supplier updated successfully." };
     },
 
     // delete supplier
     async delete(id: number): Promise<BoolResponseData> {
-        const db = await openDb();
-        const sql = "DELETE FROM Supplier WHERE id = ?";
+        let { data, error } = await supabase
+            .from("supplier")
+            .delete()
+            .eq("id", id);
 
-        try {
-            const result = await db.run(sql, [id]);
-            if (result.changes && result.changes > 0) {
-                return { success: true, message: "Supplier deleted successfully." };
-            } else {
-                return { success: false, message: "Supplier not found." };
-            }
-        } catch (error) {
-            return { success: false, message: `Failed to delete the supplier: ${String(error)}` };
+        if (error) {
+            return { success: false, message: `Failed to delete the supplier: ${error.message}` };
         }
+
+        return { success: true, message: "Supplier deleted successfully." };
     },
 
     // generate 10 random suppliers
     async generate(): Promise<BoolResponseData> {
-        const db = await openDb();
         let suppliersCreated = 0;
 
-        try {
-            await db.run("BEGIN TRANSACTION");
+        for (let i = 0; i < 10; i++) {
+            const supplier = {
+                name: `Supplier ${i + 1}`,
+                contactinfo: `Email: supplier${i + 1}@example.com`
+            };
 
-            for (let i = 0; i < 10; i++) {
-                const supplier = {
-                    name: `Supplier ${i + 1}`,
-                    contactInfo: `Email: supplier${i + 1}@example.com`
-                };
+            const result = await this.create(supplier);
 
-                const result = await this.create(supplier);
-
-                if (result.data) {
-                    suppliersCreated++;
-                }
+            if (result.data) {
+                suppliersCreated++;
             }
-
-            await db.run("COMMIT");
-            return { success: true, message: `${suppliersCreated} random suppliers created successfully.` };
-        } catch (error) {
-            await db.run("ROLLBACK");
-            return { success: false, message: `Failed to create random suppliers: ${String(error)}` };
         }
+
+        return { success: true, message: `${suppliersCreated} random suppliers created successfully.` };
     },
 
     // delete everything in supplier table
     async deleteAll(): Promise<BoolResponseData> {
-        const db = await openDb();
-        const sql = "DELETE FROM Supplier";
-        const resetPkSql = "DELETE FROM sqlite_sequence WHERE name='Supplier'";
-
         try {
-            await db.run('BEGIN');
-            await db.run(sql);
-            await db.run(resetPkSql);
-            await db.run('COMMIT');
+            let { error } = await supabase
+                .from("supplier")
+                .delete()
+                .gte("id", 0);
 
-            return { success: true, message: "All supplier deleted successfully." };
-        } catch (error) {
-            await db.run("ROLLBACK");
-            return { success: false, message: `Failed to delete supplier or reset PK: ${String(error)}` };
+            if (error) {
+                return { success: false, message: `Failed to delete all suppliers: ${error.message}` };
+            }
+
+            return { success: true, message: "All suppliers deleted successfully." };
+        } catch (error: any) {
+            return { success: false, message: `Failed to delete suppliers: ${error.message}` };
         }
     }
 }

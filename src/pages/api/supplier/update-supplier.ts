@@ -3,14 +3,14 @@ import { supplierService } from "@/services/supplierService";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "PUT") {
-        const { id, name, contactInfo } = req.body;
+        const { id, name, contactinfo } = req.body;
 
         if (!id || isNaN(Number(id))) {
             res.status(400).json({ message: "Invalid or missing supplier ID" });
             return;
         }
 
-        const result = await supplierService.updateSupplier({ id, name, contactInfo });
+        const result = await supplierService.updateSupplier({ id, name, contactinfo });
 
         if (result.success) {
             res.status(200).json({ message: "Supplier updated successfully" });

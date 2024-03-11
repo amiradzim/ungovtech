@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { userService } from "@/services/userServices";
 import { generateJwt } from "@/utils/authToken";
+import {UserModel} from "@/models/userModel";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
@@ -11,9 +12,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (result.success && user && user.id !== undefined) {
             const newJwt = await generateJwt(user.id);
+            const permissions = await UserModel.getPermissions(user.id);
 
             if (newJwt) {
-                res.status(200).json({ message: "Login successful", token: newJwt, userId: user.id });
+                res.status(200).json({ message: "Login successful", token: newJwt, userId: user.id, permissions: permissions });
             } else {
                 res.status(500).json({ message: "Failed to generate JWT." });
             }

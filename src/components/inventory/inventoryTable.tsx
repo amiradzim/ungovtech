@@ -3,9 +3,14 @@ import Link from "next/link";
 interface InventoryItem {
     id: number;
     name: string;
+    description: string;
     price: number;
-    supplierName: string;
-    supplierContact: string;
+    supplier: Supplier;
+}
+
+interface Supplier {
+    name: string;
+    contactinfo: string;
 }
 
 interface InventoryTableProps {
@@ -38,8 +43,8 @@ export default function InventoryTable({ inventory, page, setPage, totalPages }:
                             </Link>
                         </td>
                         <td className={"px-6 py-4"}>${item.price.toFixed(2)}</td>
-                        <td className={"px-6 py-4"}>{item.supplierName}</td>
-                        <td className={"px-6 py-4"}>{item.supplierContact}</td>
+                        <td className={"px-6 py-4"}>{item.supplier.name}</td>
+                        <td className={"px-6 py-4"}>{item.supplier.contactinfo}</td>
                     </tr>
                 ))}
                 </tbody>

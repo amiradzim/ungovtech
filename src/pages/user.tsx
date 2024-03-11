@@ -57,6 +57,7 @@ export default function User() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        const permissionsArray = ["create", "read", "update", "delete"];
 
         const response = await fetch('/api/user/login', {
             method: "POST",
@@ -69,8 +70,15 @@ export default function User() {
         if (response.ok) {
             setIsLoggedIn(true);
             const data = await response.json();
+
+            const permissionsObject = permissionsArray.reduce((obj, permission) => {
+                obj[permission] = data.permissions.includes(permission);
+                return obj;
+            }, {} as Record<string, boolean>);
+
             localStorage.setItem("token", data.token);
             localStorage.setItem("userId", data.userId);
+            localStorage.setItem("permissions", JSON.stringify(permissionsObject));
             localStorage.setItem("isLoggedIn", String(true));
         } else {
             alert("Login failed. Please check your credentials.");

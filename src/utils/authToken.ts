@@ -11,6 +11,7 @@ export const generateJwt = async (userId: number, expiresIn: string = "3h"): Pro
     const permissions = await UserModel.getPermissions(userId);
 
     const tokenPayload = { userId, jti, permissions };
+
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn });
 
     await AuthModel.invalidateUserToken(userId);

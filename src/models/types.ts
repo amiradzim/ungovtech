@@ -17,7 +17,7 @@ export interface InventoryItem {
     name: string;
     description?: string;
     price: number;
-    supplierId?: number;
+    supplierid?: number;
 }
 
 export interface InventoryResponseData extends ResponseData {
@@ -33,7 +33,7 @@ export interface InventoryPaginatedResult<T> {
 export interface SupplierItem {
     id?: number;
     name: string;
-    contactInfo: string;
+    contactinfo: string;
 }
 
 export interface SuppliersResponseData extends ResponseData {
