@@ -39,7 +39,7 @@ export default function Inventory() {
     const [priceValue, setPriceValue] = useState(0);
     const [sortOrder, setSortOrder] = useState("");
     const [supplierId, setSupplierId] = useState(0);
-    const pageSize = 20;
+    const pageSize = 10;
 
     const fetchPermissions = () => {
         const storedPermissions = localStorage.getItem("permissions");
@@ -130,12 +130,16 @@ export default function Inventory() {
         <div>
             <Navbar />
             <div className={"p-10"}>
+                <h1 className={"mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 sm:px-16 xl:px-48 md:text-5xl lg:text-6xl flex items-center justify-center"}>
+                    <span className={"align-middle"}>Inventory</span>
+                </h1>
                 {!addProduct ? (
                     permissions.read ? (
                         <>
                             <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleCreateProductClick} disabled={!permissions.create}>
                                 Create Product
                             </button>
+
                             <InventoryFilter
                                 priceCondition={priceCondition}
                                 setPriceCondition={setPriceCondition}

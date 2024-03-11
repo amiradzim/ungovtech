@@ -128,8 +128,10 @@ export default function User() {
     return (
         <div>
             <Navbar />
-            <h1 className="text-3xl font-bold underline">User</h1>
             <div className={"p-10"}>
+                <h1 className={"mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 sm:px-16 xl:px-48 md:text-5xl lg:text-6xl flex items-center justify-center"}>
+                    <span className={"align-middle"}>Users</span>
+                </h1>
                 {isLoggedIn ? (
                     <PermissionsForm
                         handlePermissionChange={handlePermissionChange}

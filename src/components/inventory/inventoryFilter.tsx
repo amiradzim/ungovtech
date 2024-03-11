@@ -38,7 +38,7 @@ export default function InventoryFilter(
             <div className={"mt-3"}>
                 <span>Use the filters below to filter the table.</span>
             </div>
-            <form className={"flex items-center m-4"} onSubmit={(e) => e.preventDefault()}>
+            <form className={"flex justify-center items-center m-4"} onSubmit={(e) => e.preventDefault()}>
                 <div className={"flex m-2"}>
                     <input
                         className={"flex mr-2"}

@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import { useRouter } from 'next/router';
+import Navbar from "@/components/common/Navbar";
 
 interface InventoryItem {
     id: number;
@@ -23,10 +24,11 @@ export default function InventoryDetails() {
 
     const [inventoryProduct, setInventoryProduct] = useState<InventoryItem | null>(null);
     const [loading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState("");
     const [isEditMode, setIsEditMode] = useState(false);
-    const [editedName, setEditedName] = useState('');
+    const [editedName, setEditedName] = useState("");
     const [editedPrice, setEditedPrice] = useState(0);
+    const [editedDescription, setEditedDescription] = useState("");
     const [supplierId, setSupplierId] = useState(0);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
@@ -62,8 +64,9 @@ export default function InventoryDetails() {
 
     const handleEdit = () => {
         setIsEditMode(true);
-        setEditedName(inventoryProduct?.name || '');
+        setEditedName(inventoryProduct?.name || "");
         setEditedPrice(inventoryProduct?.price || 0);
+        setEditedDescription(inventoryProduct?.description || "");
     };
 
     const handleUpdate = async () => {
@@ -155,64 +158,90 @@ export default function InventoryDetails() {
 
     return (
         <div>
-            <button onClick={handleBack}>
+            <Navbar />
+            <div className={"p-10"}>
+                <h5 className={"mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 sm:px-16 xl:px-48 md:text-5xl lg:text-6xl flex items-center justify-center"}>
+                    <span className={"align-middle"}>Product Details</span>
+                </h5>
+                {(inventoryProduct) ?
+                    <>
+                        <div className={"grid gap-6 mb-6 md:grid-cols-2 pt-5"}>
+                            <div>
+                                <div className={"block mb-2 text-sm font-medium text-gray-900"}>Product Name:</div>
+                                {isEditMode ? (
+                                    <input className={"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"} type="text" value={editedName} onChange={(e) => setEditedName(e.target.value)} />
+                                ) : (
+                                    <div>{inventoryProduct.name}</div>
+                                )}
+                            </div>
+
+                            <div>
+                                <div className={"block mb-2 text-sm font-medium text-gray-900"}>Product Description:</div>
+                                {isEditMode ? (
+                                    <input className={"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"} type="text" value={editedDescription} onChange={(e) => setEditedDescription(e.target.value)} />
+                                ) : (
+                                    <div>{inventoryProduct.description}</div>
+                                )}
+                            </div>
+
+                            <div>
+                                <div className={"block mb-2 text-sm font-medium text-gray-900"}>Price:</div>
+                                {isEditMode ? (
+                                    <input className={"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"} type="number" value={editedPrice} onChange={(e) => setEditedPrice(Number(e.target.value))} />
+                                ) : (
+                                    <div>{inventoryProduct.price}</div>
+                                )}
+                            </div>
+
+                            <div>
+                                <div className={"block mb-2 text-sm font-medium text-gray-900"}>Supplier:</div>
+                                <div>{inventoryProduct.supplierName}</div>
+                            </div>
+
+                            <div>
+                                <div className={"block mb-2 text-sm font-medium text-gray-900"}>Supplier Contact:</div>
+                                {isEditMode ? (
+                                    <>
+                                        <select value={supplierId} onChange={(e) => setSupplierId(Number(e.target.value))} >
+                                            <option value="">Select Supplier</option>
+                                            {suppliers.map((supplier) => (
+                                                <option key={supplier.id} value={supplier.id}>
+                                                    {supplier.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </>
+
+                                ) : (
+                                    <>
+                                        <div>{inventoryProduct.supplierContact}</div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            {isEditMode ? (
+                                <>
+                                    <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleUpdate}>Confirm</button>
+                                    <button className={"inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 rounded-full px-5 py-2.5 text-center me-2 mb-2"} onClick={handleCancel}>Cancel</button>
+                                </>
+                            ) : (
+                                <>
+                                    <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleEdit}>Update</button>
+                                    <button className={"text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleDelete}>Delete</button>
+                                </>
+                            )}
+                        </div>
+                    </>
+                    :
+                    <>
+                        <div>The Product ID you&apos;ve entered could not be found.</div>
+                    </>
+                }
+            <button className={"inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 rounded-full px-5 py-2.5 text-center me-2 mb-2"} onClick={handleBack}>
                 Back
             </button>
-            {(inventoryProduct) ?
-                <>
-                    <div>Product Name:</div>
-                    {isEditMode ? (
-                        <input type="text" value={editedName} onChange={(e) => setEditedName(e.target.value)} />
-                    ) : (
-                        <div>{inventoryProduct.name}</div>
-                    )}
-
-                    <div>Price:</div>
-                    {isEditMode ? (
-                        <input type="number" value={editedPrice} onChange={(e) => setEditedPrice(Number(e.target.value))} />
-                    ) : (
-                        <div>{inventoryProduct.price}</div>
-                    )}
-
-                    <div>Supplier:</div>
-                    <div>{inventoryProduct.supplierName}</div>
-
-                    <div>Supplier Contact:</div>
-                    {isEditMode ? (
-                        <>
-                            <select value={supplierId} onChange={(e) => setSupplierId(Number(e.target.value))} >
-                                <option value="">Select Supplier</option>
-                                {suppliers.map((supplier) => (
-                                    <option key={supplier.id} value={supplier.id}>
-                                        {supplier.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </>
-
-                    ) : (
-                        <>
-                            <div>{inventoryProduct.supplierContact}</div>
-                        </>
-                    )}
-
-                    {isEditMode ? (
-                        <>
-                            <button onClick={handleUpdate}>Confirm</button>
-                            <button onClick={handleCancel}>Cancel</button>
-                        </>
-                    ) : (
-                        <>
-                            <button onClick={handleEdit}>Update</button>
-                            <button onClick={handleDelete}>Delete</button>
-                        </>
-                    )}
-                </>
-                :
-                <>
-                    <div>The Product ID you&apos;ve entered could not be found.</div>
-                </>
-            }
+            </div>
         </div>
     )
 }

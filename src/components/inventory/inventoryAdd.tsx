@@ -67,28 +67,45 @@ export default function InventoryAdd ( { handleCreateProductClick, errorMessage,
     };
 
     return (
-        <>
-            <form onSubmit={handleSubmit}>
-                <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-                <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
-                <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required />
-                <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} required>
-                    <option value="">Select Supplier</option>
-                    {suppliers.map((supplier) => (
-                        <option key={supplier.id} value={supplier.id}>
-                            {supplier.id} - {supplier.name}
-                        </option>
-                    ))}
-                </select>
-                <button onClick={handleSubmit} disabled={!name || !description || !price || !supplierId}>
-                    Submit
-                </button>
-                <button onClick={handleCreateProductClick}>
-                    Cancel
-                </button>
+        <div className={"flex items-center justify-center pt-5"}>
+            <form className={"bg-white shadow-md rounded px-30 pt-6 pb-8 mb-4 px-10 w-full xl:w-1/2"} onSubmit={handleSubmit}>
+                <div className={"mb-6"}>
+                    <label className={"block text-gray-700 text-sm font-bold mb-2"} htmlFor="prodName">Product Name</label>
+                    <input id="prodName" className={"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"} type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+
+                <div className={"mb-6"}>
+                    <label className={"block text-gray-700 text-sm font-bold mb-2"} htmlFor="prodDesc">Product Description</label>
+                    <input id="prodDesc" className={"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"} type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+                </div>
+
+                <div className={"mb-6"}>
+                    <label className={"block text-gray-700 text-sm font-bold mb-2"} htmlFor="prodPrice">Product Price</label>
+                    <input id="prodPrice" className={"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"} type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required />
+                </div>
+
+                <div className={"mb-6"}>
+                    <label className={"block text-gray-700 text-sm font-bold mb-2"} htmlFor="prodName">Supplier</label>
+                    <select id="suppId" value={supplierId} onChange={(e) => setSupplierId(e.target.value)} required>
+                        <option value="">Select Supplier</option>
+                        {suppliers.map((supplier) => (
+                            <option key={supplier.id} value={supplier.id}>
+                                {supplier.id} - {supplier.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className={"flex items-center justify-between"}>
+                    <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleSubmit} disabled={!name || !description || !price || !supplierId}>
+                        Submit
+                    </button>
+                    <button className={"text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleCreateProductClick}>
+                        Cancel
+                    </button>
+                </div>
+
             </form>
-
-
-        </>
+        </div>
     )
 }

@@ -50,7 +50,7 @@ export default function InventoryTable({ inventory, page, setPage, totalPages }:
                 </tbody>
             </table>
 
-            <div className={"flex items-center flex-column flex-wrap md:flex-row justify-between pt-4"}>
+            <div className={"flex items-center justify-center flex-column flex-wrap md:flex-row py-4"}>
                 <div className={"flex -space-x-px rtl:space-x-reverse text-sm h-8"}>
                     <button className={"flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage(1)} disabled={page === 1}>
                         Start
