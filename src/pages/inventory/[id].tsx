@@ -30,12 +30,6 @@ export default function InventoryDetails() {
     const [supplierId, setSupplierId] = useState(0);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
-    const fetchSuppliers = async () => {
-        const response = await fetch('/api/supplier/get-suppliers');
-        const data = await response.json();
-        setSuppliers(data.data);
-    };
-
     const fetchInventoryDetails = async () => {
         setLoading(true);
 
@@ -65,14 +59,6 @@ export default function InventoryDetails() {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (id) fetchInventoryDetails();
-    }, [id, isEditMode])
-
-    useEffect(() => {
-        fetchSuppliers();
-    }, []);
 
     const handleEdit = () => {
         setIsEditMode(true);
@@ -145,6 +131,20 @@ export default function InventoryDetails() {
     const handleBack = () => {
         router.back();
     };
+
+    useEffect(() => {
+        if (id) fetchInventoryDetails();
+    }, [id, isEditMode])
+
+    useEffect(() => {
+        const fetchSuppliers = async () => {
+            const response = await fetch('/api/supplier/get-suppliers');
+            const data = await response.json();
+            setSuppliers(data.data);
+        };
+
+        fetchSuppliers();
+    }, []);
 
     return (
         <div>

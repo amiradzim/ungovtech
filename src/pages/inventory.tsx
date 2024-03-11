@@ -37,14 +37,6 @@ export default function Inventory() {
     const [supplierId, setSupplierId] = useState(0);
     const pageSize = 20;
 
-    useEffect(() => {
-        fetchInventory();
-    }, [page]);
-
-    useEffect(() => {
-        fetchPermissions();
-    }, []);
-
     const fetchPermissions = () => {
         const storedPermissions = localStorage.getItem("permissions");
 
@@ -57,7 +49,6 @@ export default function Inventory() {
             }
         }
     };
-
 
     const fetchInventory = async () => {
         setLoading(true);
@@ -122,6 +113,14 @@ export default function Inventory() {
     const handleCreateProductClick = () => {
         setAddProduct(!addProduct);
     };
+
+    useEffect(() => {
+        fetchInventory();
+    }, [page, fetchInventory]);
+
+    useEffect(() => {
+        fetchPermissions();
+    }, []);
 
     return (
         <div>
