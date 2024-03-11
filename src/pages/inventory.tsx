@@ -1,4 +1,7 @@
+import '../app/globals.css';
+
 import React, { useEffect, useState } from "react";
+
 import Navbar from "../components/common/Navbar";
 import InventoryTable from "@/components/inventory/inventoryTable";
 import InventoryFilter from "@/components/inventory/inventoryFilter";
@@ -123,10 +126,13 @@ export default function Inventory() {
     return (
         <div>
             <Navbar />
-            <div>
+            <div className={"p-10"}>
                 {!addProduct ? (
                     permissions.read ? (
                         <>
+                            <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleCreateProductClick} disabled={!permissions.create}>
+                                Create Product
+                            </button>
                             <InventoryFilter
                                 priceCondition={priceCondition}
                                 setPriceCondition={setPriceCondition}
@@ -145,9 +151,6 @@ export default function Inventory() {
                                 setPage={setPage}
                                 totalPages={totalPages}
                             />
-                            <button onClick={handleCreateProductClick} disabled={!permissions.create}>
-                                Create Product
-                            </button>
                         </>
                     ) : (
                         <h1>{errorMessage}</h1>
@@ -163,3 +166,4 @@ export default function Inventory() {
         </div>
     );
 }
+

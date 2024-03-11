@@ -1,3 +1,5 @@
+import '../app/globals.css';
+
 import React, { useEffect, useState } from "react";
 
 import Navbar from '../components/common/Navbar';
@@ -118,33 +120,36 @@ export default function User() {
     return (
         <div>
             <Navbar />
-            <h1>User</h1>
-            {isLoggedIn ? (
-                <PermissionsForm
-                    handlePermissionChange={handlePermissionChange}
-                    permissions={permissions}
-                    handleCheckboxChange={handleCheckboxChange}
-                    handleLogout={handleLogout}
-                />
-            ) : isRegistering ? (
-                <RegistrationForm
-                    username={username}
-                    setUsername={setUsername}
-                    password={password}
-                    setPassword={setPassword}
-                    handleRegister={handleRegister}
-                    setIsRegistering={setIsRegistering}
-                />
-            ) : (
-                <LoginForm
-                    username={username}
-                    setUsername={setUsername}
-                    password={password}
-                    setPassword={setPassword}
-                    handleLogin={handleLogin}
-                    setIsRegistering={setIsRegistering}
-                />
-            )}
+            <h1 className="text-3xl font-bold underline">User</h1>
+            <div className={"p-10"}>
+                {isLoggedIn ? (
+                    <PermissionsForm
+                        handlePermissionChange={handlePermissionChange}
+                        permissions={permissions}
+                        handleCheckboxChange={handleCheckboxChange}
+                        handleLogout={handleLogout}
+                    />
+                ) : isRegistering ? (
+                    <RegistrationForm
+                        username={username}
+                        setUsername={setUsername}
+                        password={password}
+                        setPassword={setPassword}
+                        handleRegister={handleRegister}
+                        setIsRegistering={setIsRegistering}
+                    />
+                ) : (
+                    <LoginForm
+                        username={username}
+                        setUsername={setUsername}
+                        password={password}
+                        setPassword={setPassword}
+                        handleLogin={handleLogin}
+                        setIsRegistering={setIsRegistering}
+                    />
+                )}
+            </div>
+
         </div>
     );
 }

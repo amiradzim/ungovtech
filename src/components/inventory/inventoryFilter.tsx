@@ -34,71 +34,96 @@ export default function InventoryFilter(
     };
 
     return (
-        <form onSubmit={(e) => e.preventDefault()}>
-            <div>
-                <label>
+        <div>
+            <div className={"mt-3"}>
+                <span>Use the filters below to filter the table.</span>
+            </div>
+            <form className={"flex items-center m-4"} onSubmit={(e) => e.preventDefault()}>
+                <div className={"flex m-2"}>
                     <input
+                        className={"flex mr-2"}
+                        id="priceConditionMore"
                         type="radio"
                         name="priceCondition"
                         value="More"
                         checked={priceCondition === "More"}
                         onChange={handleRadioDeselect}
                     />
-                    More than
-                </label>
-                <label>
+                    <label className={"flex items-center justify-center mr-6"} htmlFor="priceConditionMore">
+                        More than
+                    </label>
+
                     <input
+                        className={"flex mr-2"}
+                        id="priceConditionLess"
                         type="radio"
                         name="priceCondition"
                         value="Less"
                         checked={priceCondition === "Less"}
                         onChange={handleRadioDeselect}
                     />
-                    Less than
-                </label>
-                <input
-                    type="number"
-                    value={priceValue}
-                    onChange={(e) => setPriceValue(Number(e.target.value))}
-                    placeholder="Price value"
-                />
-            </div>
-            <div>
-                <label>
+                    <label className={"flex items-center justify-center mr-6"}  htmlFor="priceConditionLess">
+                        Less than
+                    </label>
+
+                    <label className={"flex items-center justify-center mr-2"} htmlFor="priceValue">
+                        Set the price:
+                    </label>
                     <input
+                        className={"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"}
+                        id="priceValue"
+                        type="number"
+                        value={priceValue}
+                        onChange={(e) => setPriceValue(Number(e.target.value))}
+                        placeholder="Price value"
+                    />
+                </div>
+                <div className={"flex m-2"}>
+                    <input
+                        className={"mr-2"}
+                        id="priceAsc"
                         type="radio"
                         name="sortOrder"
                         value="Asc"
                         checked={sortOrder === "Asc"}
                         onChange={handleRadioDeselect}
                     />
-                    Price Ascending
-                </label>
-                <label>
+                    <label className={"mr-6"} htmlFor="priceAsc">
+                        Price Ascending
+                    </label>
+
                     <input
+                        className={"mr-2"}
+                        id="priceDesc"
                         type="radio"
                         name="sortOrder"
                         value="Desc"
                         checked={sortOrder === "Desc"}
                         onChange={handleRadioDeselect}
                     />
-                    Price Descending
-                </label>
-            </div>
-            <div>
-                <input
-                    type="number"
-                    value={supplierId}
-                    onChange={(e) => setSupplierId(Number(e.target.value))}
-                    placeholder="Supplier ID"
-                />
-            </div>
-            <div>
-                <button type="submit" onClick={fetchInventory}>Filter</button>
-            </div>
-            <div>
-                <button onClick={handleResetFilter}>Reset Filter</button>
-            </div>
-        </form>
+                    <label className={"mr-6"} htmlFor="priceDesc">
+                        Price Descending
+                    </label>
+                </div>
+                <div className={"flex m-2"}>
+                    <label className={"flex items-center justify-center mr-2"} htmlFor="supplierId">Set the Supplier ID:</label>
+                    <input
+                        className={"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"}
+                        id="supplierId"
+                        type="number"
+                        value={supplierId}
+                        onChange={(e) => setSupplierId(Number(e.target.value))}
+                        placeholder="Supplier ID"
+                    />
+                </div>
+                <div className={"flex m-2"}>
+                    <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} type="submit" onClick={fetchInventory}>Filter</button>
+                </div>
+                <div className={"flex m-2"}>
+                    <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleResetFilter}>Reset Filter</button>
+                </div>
+            </form>
+        </div>
+
     );
 }
