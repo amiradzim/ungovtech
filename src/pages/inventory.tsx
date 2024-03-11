@@ -39,7 +39,7 @@ export default function Inventory() {
     const [priceValue, setPriceValue] = useState(0);
     const [sortOrder, setSortOrder] = useState("");
     const [supplierId, setSupplierId] = useState(0);
-    const pageSize = 10;
+    const pageSize = 20;
 
     const fetchPermissions = () => {
         const storedPermissions = localStorage.getItem("permissions");
