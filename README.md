@@ -79,22 +79,23 @@ Users must have the "create" permission enabled to create a new product.
 
 Click on the "Create Product" button to add a new product.
 Fill in the required information and click "Submit."
-The page will redirect to the product details page (inventory/[id]) after submission.
+The page will redirect to the product details page `inventory/[id]` after submission.
 
 #### Product Details Page:
+
+To navigate to the product details page from the table, click on the *Product Name* of any product.<br>
 
 On the product details page, users can update or delete the product.
 Updating the product will refresh the page to display the updated details.
 Deleting the product will navigate the user back to the Inventory page.
-Filters and Sorting:
 
-#### Filters:
+#### Filters and Sorting:
 
+#### *Filters:*
 - "More than," "Less than," and Price Value
 - Supplier Id
 
-#### Sorting:
-
+#### *Sorting:*
 - "Price Ascending" or "Price Descending"
 
 #### Using Filters:
