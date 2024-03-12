@@ -52,17 +52,17 @@ export default function InventoryTable({ inventory, page, setPage, totalPages }:
 
             <div className={"flex items-center justify-center flex-column flex-wrap md:flex-row py-4"}>
                 <div className={"flex -space-x-px rtl:space-x-reverse text-sm h-8"}>
-                    <button className={"flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage(1)} disabled={page === 1}>
+                    <button className={"flex items-center justify-center px-10 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage(1)} disabled={page === 1}>
                         Start
                     </button>
-                    <button className={"flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage((prevPage) => Math.max(prevPage - 1, 1))} disabled={page === 1}>
+                    <button className={"flex items-center justify-center px-10 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage((prevPage) => Math.max(prevPage - 1, 1))} disabled={page === 1}>
                         Previous
                     </button>
-                    <span className={"flex items-center justify-center px-3 h-8 leading-tight text-gray-900 bg-white border border-gray-300"}>Page {page} of {totalPages}</span>
-                    <button className={"flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage(Math.min(page + 1, totalPages))} disabled={page === totalPages}>
+                    <span className={"flex items-center justify-center px-10 h-8 leading-tight text-gray-900 bg-white border border-gray-300"}>Page {page} of {totalPages}</span>
+                    <button className={"flex items-center justify-center px-10 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage(Math.min(page + 1, totalPages))} disabled={page === totalPages}>
                         Next
                     </button>
-                    <button className={"flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage(totalPages)} disabled={page === totalPages}>
+                    <button className={"flex items-center justify-center px-10 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700"} onClick={() => setPage(totalPages)} disabled={page === totalPages}>
                         End
                     </button>
                 </div>

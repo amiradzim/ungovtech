@@ -5,6 +5,7 @@ interface InventoryAddProps {
     handleCreateProductClick: () => void;
     errorMessage: string;
     setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
+    setAddProduct: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface Supplier {
@@ -13,7 +14,7 @@ interface Supplier {
     contactinfo: string;
 }
 
-export default function InventoryAdd ( { handleCreateProductClick, errorMessage, setErrorMessage }: InventoryAddProps) {
+export default function InventoryAdd ( { handleCreateProductClick, errorMessage, setErrorMessage, setAddProduct }: InventoryAddProps) {
     const router = useRouter();
 
     const [name, setName] = useState('');
@@ -66,6 +67,69 @@ export default function InventoryAdd ( { handleCreateProductClick, errorMessage,
         }
     };
 
+    const handleGenerate = async (e: React.FormEvent) => {
+        const confirmed = window.confirm("Are you sure you want to generate 1000 products? This action will take about 1 minute to execute.");
+
+        if (confirmed) {
+            setAddProduct(false);
+            const token = localStorage.getItem("token");
+
+            try {
+                const res = await fetch("/api/inventory/generate-products", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log("Products generated successfully.");
+                    router.push(`/inventory`);
+                } else if (res.status === 403) {
+                    setErrorMessage("Access denied. You do not have permission to access this resource.");
+                    console.error(errorMessage);
+                } else {
+                    console.error("An error occurred:", res.status);
+                }
+            } catch (error) {
+                console.error("An error occurred:", error);
+            }
+        }
+    };
+
+    const handleClearProducts = async (e: React.FormEvent) => {
+        const confirmed = window.confirm("Are you sure you want to delete everything in the Inventory table? This action IS NOT REVERSIBLE.");
+
+        if (confirmed) {
+            setAddProduct(false);
+            const token = localStorage.getItem("token");
+
+            try {
+                const res = await fetch("/api/inventory/clear-inventory", {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log("Products deleted successfully.");
+                } else if (res.status === 403) {
+                    setErrorMessage("Access denied. You do not have permission to access this resource.");
+                    console.error(errorMessage);
+                } else {
+                    console.error("An error occurred:", res.status);
+                }
+            } catch (error) {
+                console.error("An error occurred:", error);
+            }
+        }
+    };
+
     return (
         <div className={"flex items-center justify-center pt-5"}>
             <form className={"bg-white shadow-md rounded px-30 pt-6 pb-8 mb-4 px-10 w-full xl:w-1/2"} onSubmit={handleSubmit}>
@@ -100,11 +164,16 @@ export default function InventoryAdd ( { handleCreateProductClick, errorMessage,
                     <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleSubmit} disabled={!name || !description || !price || !supplierId}>
                         Submit
                     </button>
+                    <button className={"text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleGenerate}>
+                        Generate Products
+                    </button>
+                    <button className={"text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleClearProducts}>
+                        Delete All Products
+                    </button>
                     <button className={"text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2"} onClick={handleCreateProductClick}>
                         Cancel
                     </button>
                 </div>
-
             </form>
         </div>
     )

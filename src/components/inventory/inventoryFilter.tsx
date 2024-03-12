@@ -39,7 +39,7 @@ export default function InventoryFilter(
                 <span>Use the filters below to filter the table.</span>
             </div>
             <form className={"flex justify-center items-center m-4"} onSubmit={(e) => e.preventDefault()}>
-                <div className={"flex m-2"}>
+                <div className={"flex m-2 border-r border-gray-300 h-12 pr-7"}>
                     <input
                         className={"flex mr-2"}
                         id="priceConditionMore"
@@ -78,7 +78,7 @@ export default function InventoryFilter(
                         placeholder="Price value"
                     />
                 </div>
-                <div className={"flex m-2"}>
+                <div className={"flex m-2 border-r border-gray-300 h-12 pr-2"}>
                     <input
                         className={"mr-2"}
                         id="priceAsc"
@@ -88,7 +88,7 @@ export default function InventoryFilter(
                         checked={sortOrder === "Asc"}
                         onChange={handleRadioDeselect}
                     />
-                    <label className={"mr-6"} htmlFor="priceAsc">
+                    <label className={"flex items-center justify-center mr-6"} htmlFor="priceAsc">
                         Price Ascending
                     </label>
 
@@ -101,11 +101,11 @@ export default function InventoryFilter(
                         checked={sortOrder === "Desc"}
                         onChange={handleRadioDeselect}
                     />
-                    <label className={"mr-6"} htmlFor="priceDesc">
+                    <label className={"flex items-center justify-center mr-6"} htmlFor="priceDesc">
                         Price Descending
                     </label>
                 </div>
-                <div className={"flex m-2"}>
+                <div className={"flex m-2 border-r border-gray-300 h-12 pr-7"}>
                     <label className={"flex items-center justify-center mr-2"} htmlFor="supplierId">Set the Supplier ID:</label>
                     <input
                         className={"bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"}

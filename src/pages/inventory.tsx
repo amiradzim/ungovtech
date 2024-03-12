@@ -167,6 +167,7 @@ export default function Inventory() {
                         handleCreateProductClick={handleCreateProductClick}
                         errorMessage={errorMessage}
                         setErrorMessage={setErrorMessage}
+                        setAddProduct={setAddProduct}
                     />
                 )}
             </div>
