@@ -114,4 +114,4 @@ To generate or delete data in the Inventory table, users can utilize the "Create
 
 - Clicking on this button will delete all existing data in the Inventory table. Similar to the "Generate Product" button, a confirmation popup will appear before executing the deletion process. Upon confirmation, all data in the Inventory table will be permanently removed.
 
-It's important to note that these operations should be performed with caution, as they may have significant consequences on the data stored in the Inventory table.
+#### *It's important to note that these operations should be performed with caution, as they may have significant consequences on the data stored in the Inventory table.*
